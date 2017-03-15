@@ -2,10 +2,6 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 
-#define LED_POTATO LED_BUILTIN
-#define LED_LOSER LED_BUILTIN
-//#define BUZZER
-
 #define MESH_PREFIX     "HOTPOTATO"
 #define MESH_PASSWORD   "Zodiaque"
 #define MESH_PORT       21147
@@ -18,10 +14,10 @@
 
 #define SEND_POTATO_TO_PLAYER_X "To:X Potato"
 
-const int buzzButtonPin = D0;
-const int yellowButtonPin = D5;  
-const int redButtonPin = D7;  
-const int melodyBuzzerPin = D8;  
+const int buttonPin = D0; // Button to thow the potato to another player
+const int yellowButtonPin = D5; // Potato owner
+const int redButtonPin = D7;    // Death Indicator
+const int melodyBuzzerPin = D8;  // Buzzer "explosion"
 
 easyMesh mesh;
 
@@ -46,6 +42,13 @@ void setupMesh() {
   mesh.setNewConnectionCallback( &newConnectionCallback );
 
   player.node = mesh.getChipId();
+}
+
+void setupPin() {
+    pinMode(buttonPin, INPUT);
+    pinMode(yellowButtonPin, OUTPUT);
+    pinMode(redButtonPin, OUTPUT);
+    pinMode(melodyBuzzerPin, OUTPUT);
 }
 
 void setupWifi() {
@@ -76,9 +79,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
 
-  pinMode(LED_POTATO, OUTPUT);
-  pinMode(LED_LOSER, OUTPUT);
-
+  setupPin();
   setupMesh();
   setupWifi();
   setupServer();
