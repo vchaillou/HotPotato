@@ -18,6 +18,11 @@
 
 #define SEND_POTATO_TO_PLAYER_X "To:X Potato"
 
+const int buzzButtonPin = D0;
+const int yellowButtonPin = D5;  
+const int redButtonPin = D7;  
+const int melodyBuzzerPin = D8;  
+
 easyMesh mesh;
 
 typedef struct {
