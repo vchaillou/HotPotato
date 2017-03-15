@@ -32,6 +32,7 @@ typedef struct {
 Player potatoOwner;
 Player player;
 Player playerList[MAX_PLAYERS];
+int playerCount = 0;
 
 ESP8266WebServer server(WEBSERVER_PORT);
 const char * ssid = "Server_Potato";
@@ -97,7 +98,23 @@ void loop() {
 }
 
 void receivedCallback(uint32_t from, String &msg) {
-  
+  String message = msg;
+  if(msg.startsWith("NewPlayer ")) {
+    message = msg.substring(16);
+    Serial.println(message);
+    uint8_t playerNode = message.substring(0, message.indexOf(" ")).toInt();
+    Serial.println(playerNode);
+    message = message.substring(message.indexOf(" ")+1);
+    Serial.println(message);
+    String playerName = message.substring(8);
+    Serial.println(playerName);
+    playerList[playerCount].name = playerName;
+    playerList[playerCount].node = playerNode;
+    playerList[playerCount].num = playerCount;
+    playerList[playerCount].nbWon = 0;
+    playerList[playerCount].nbLost = 0;
+    playerCount++;
+  }
 }
 
 void newConnectionCallback(bool adopt) {
@@ -120,5 +137,10 @@ void setName() {
   player.name = server.arg(0);
   Serial.println(player.name);
   server.send(200, "text/html", getHTML());
-  // TODO => ajouter le joueur
+  addPlayer();
 }
+
+void addPlayer() {
+  mesh.sendBroadcast(String("NewPlayer Node:") + String(player.node) + String(" Player:") + String(player.name)); 
+}
+
