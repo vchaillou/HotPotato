@@ -136,7 +136,6 @@ void loop() {
   if(timer == 0) {
     if(hasPotato) {
       digitalWrite(buzzerPin, HIGH);
-      Serial.println("Youpi youpa");
       delay(250);
       digitalWrite(buzzerPin, LOW);
       for(int i=0 ; i<playerCount; i++) {
@@ -163,7 +162,7 @@ void loop() {
     timer--;
   }
   
-  if(gameStarted && hasPotato && digitalRead(buttonPin) == LOW) {
+  if(gameStarted && hasPotato && digitalRead(buttonPin) == HIGH) {
     for(int i=0 ; i<playerCount ; i++) {
       if(playerList[i].node == mesh.getChipId()) {
         String str = String("YOURETHEPOTATOOWNER");
