@@ -75,7 +75,7 @@ void setupMesh() {
 }
 
 void setupPin() {
-    pinMode(buttonPin, INPUT);
+    pinMode(buttonPin, INPUT_PULLUP);
     pinMode(yellowButtonPin, OUTPUT);
     pinMode(redButtonPin, OUTPUT);
     pinMode(buzzerPin, OUTPUT);
@@ -150,6 +150,9 @@ void loop() {
             delay(100);
           }
           mesh.sendBroadcast(str);
+
+          break;
+
         }
       }
       for(int i=0 ; i<playerCount; i++) {
@@ -171,6 +174,9 @@ void loop() {
   else if(timer > 0) {
     timer--;
   }
+
+
+
   if(gameStarted && timer>0 && hasPotato && digitalRead(buttonPin) == LOW) {
     Serial.println("Bouton !");
     for(int i=0 ; i<playerCount ; i++) {
@@ -276,6 +282,7 @@ String getHTML() {
 void beginGameWithPotato() {
   server.send(200, "text/plain", "Game will be launched shortly...");
   WiFi.disconnect();
+  WiFi.mode(WIFI_OFF);
   while(mesh.connectionCount() < playerCount-1) {
     mesh.update();
     delay(1000);
@@ -292,6 +299,7 @@ void beginGameWithPotato() {
 void beginGameWithoutPotato() {
   server.send(200, "text/plain", "Waiting for the potato...");
   WiFi.disconnect();
+  WiFi.mode(WIFI_OFF);
 }
 
 
