@@ -38,6 +38,8 @@ Player player;
 Player playerList[MAX_PLAYERS];
 int playerCount = 0;
 
+bool playerReady = false;
+
 ESP8266WebServer server(WEBSERVER_PORT);
 const char * ssid = "Server_Potato";
 const char * ContentHtml = "<!DOCTYPE html>\
@@ -116,14 +118,6 @@ void setup() {
   setupMDNS();
 }
 
-void gameStart() {
-  setupMesh();
-}
-
-void GameEnd() {
-  setupWifi();
-}
-
 void loop() {
   // put your main code here, to run repeatedly:
   server.handleClient();
@@ -185,6 +179,7 @@ void receivedCallback(uint32_t from, String &msg) {
 
     player.num = playerCount-1;
     playerList[playerCount-1] = player;
+    playerReady = true;
   }
 }
 
@@ -260,6 +255,23 @@ void setName() {
 }
 
 void addPlayer() {
-  mesh.sendBroadcast(String("NewPlayer Node:") + String(player.node) + String(" Player:") + String(player.name)); 
+  setupMesh();
+  int i=0;
+
+  while(i<20 && !playerReady) {
+    mesh.sendBroadcast(String("NewPlayer Node:") + String(player.node) + String(" Player:") + String(player.name));
+    delay(1000);
+    mesh.update();
+    i++;
+  }
+
+  while(i<20) {
+    delay(1000);
+    mesh.update();
+    i++;
+  }
+
+  // game start
+  
 }
 
