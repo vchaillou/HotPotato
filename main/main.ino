@@ -68,9 +68,7 @@ const char * contentCss = "<style>\
 void setupMesh() {
   mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
   mesh.setReceiveCallback( &receivedCallback );
-  mesh.setNewConnectionCallback( &newConnectionCallback );
-
-  player.node = mesh.getChipId(); 
+  mesh.setNewConnectionCallback( &newConnectionCallback ); 
 }
 
 void setupPin() {
@@ -95,8 +93,8 @@ void setupServer() {
     Serial.println("MDNS responder started");
   }
   server.on("/", webRoot);
-  server.on("/BeginWithPotato", beginWithPotato);
-  server.on("/BeginWithoutPotato", beginWithoutPotato);
+  server.on("/BeginWithPotato", beginGameWithPotato);
+  server.on("/BeginWithoutPotato", beginGameWithoutPotato);
   server.begin();
   Serial.println("HTTP server started");
 }
@@ -121,7 +119,7 @@ void setup() {
   // TODO => VM
 }
 
-void addPlayer(uint32_t node, string name) {
+void addPlayer(uint32_t node, String name) {
   playerList[playerCount].node = node;
   playerList[playerCount].name = name;
   playerList[playerCount].nbWon = 0;
@@ -138,16 +136,16 @@ void loop() {
   if(timer == 0) {
     if(hasPotato) {
       // TODO => Turn the buzzer on and off
-      for(int i=0 ; i<playerCount : i++) {
-        if(playerList[i].node == node) {
+      for(int i=0 ; i<playerCount; i++) {
+        if(playerList[i].node == mesh.getChipId()) {
           playerList[i].nbLost++;
           break;
         }
       }
     }
     else {
-      for(int i=0 ; i<playerCount : i++) {
-        if(playerList[i].node == node) {
+      for(int i=0 ; i<playerCount; i++) {
+        if(playerList[i].node == mesh.getChipId()) {
           playerList[i].nbLost++;
         }
       }
@@ -166,8 +164,9 @@ void loop() {
   if(gameStarted && hasPotato && digitalRead(buttonPin) == HIGH) {
     for(int i=0 ; i<playerCount ; i++) {
       if(playerList[i].node == mesh.getChipId()) {
+        String str = String("YOURETHEPOTATOOWNER");
         // TODO => unlit LED
-        mesh.sendSingle(playerList[(i+1)%playerCount].node, "YOURETHEPOTATOOWNER");
+        mesh.sendSingle(playerList[(i+1)%playerCount].node, str);
         hasPotato = false;
         break;
       }
@@ -196,29 +195,30 @@ void webRoot() {
 
 
 String getStatHtml(){
-  int numGame = player.nbWon + player.nbLost;
-  String str_num = String(player.num);
-  String str_lost = String(player.nbLost);
-  String str_win = String(player.nbWon);
-  String str_all = String(numGame);
-
-  String stat = "<br/>\
+  String statHead = "<br/>\
                  <table>\
                   <tr>\
-                    <td>N°</td>\
+                    <td>Ranking</td>\
                     <td>Name</td>\
                     <td>Number lost</td>\
                     <td>Number win</td>\
                     <td>Number all Game</td>\
-                  </tr>\
-                  <tr>\
+                  </tr>";
+  String statBody;
+  for(int i =0; i < playerCount; i++){
+    String str_num = String(playerList[i].num);
+    String str_lost = String(playerList[i].nbLost);
+    String str_win = String(playerList[i].nbWon);
+    String str_all = String(playerList[i].nbWon + playerList[i].nbLost);  
+    statBody += "<tr>\
                       <td>"+str_num+"</td>\
-                      <td>"+player.name+"</td>\
+                      <td>"+playerList[i].name+"</td>\
                       <td>"+str_lost+"</td>\
                       <td>"+str_win+"</td>\
                       <td>"+str_all+"</td>\
-                    </tr>\
-                </table>";
+                    </tr>"; 
+  }
+  String stat = statHead + statBody + String("</table>");
   return stat;
 }
 
@@ -227,8 +227,8 @@ String getHTML() {
   String tmpContentJquery = contentJquery;
   String tmpLinkJquery = linkJquery;
   String tmpContentCss = contentCss;
-  String tmpFormHtml = "<Form style='margin-left:40%' action='/set_name'><label>Name Player</label><input name='name_player'/>\
-                    <button type='submit'>Save name</button></Form>";
+  String tmpFormHtml = "<Form style='margin-left:40%' action='/BeginGameWithPotato'><button type='submit' name='game' value='start'>Start with potato</button></Form>\
+                        <Form style='margin-left:40%' action='/BeginGameWithoutPotato'><button type='submit' name='game' value='start'>Start without potato</button></Form>";
   String replaceOcc0 = "</title>";
   tmpContentHtml.replace(replaceOcc0, replaceOcc0 + tmpContentJquery); 
   String replaceOcc1 = "<head>";
@@ -238,10 +238,8 @@ String getHTML() {
   tmpContentHtml.replace(replaceOcc2, replaceOcc2 + tmpFormHtml);
   String statHtml = getStatHtml();
   
-  if(player.name.length() > 0) {
-    return "Hello " + player.name + statHtml;
-  }
-  return tmpContentHtml;
+  
+  return tmpContentHtml + statHtml;
 }
 
 void beginGameWithPotato() {
@@ -251,7 +249,8 @@ void beginGameWithPotato() {
   gameStarted = true;
   hasPotato = true;
   timer = random(10, 120);
-  mesh.sendBroadcast(String(timer));
+  String str = String(timer);
+  mesh.sendBroadcast(str);
 }
 
 void beginGameWithoutPotato() {
