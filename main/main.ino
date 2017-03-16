@@ -110,10 +110,18 @@ void setup() {
   Serial.begin(115200);
 
   setupPin();
-  setupMesh();
+  //setupMesh();
   setupWifi();
   setupServer();
   setupMDNS();
+}
+
+void gameStart() {
+  setupMesh();
+}
+
+void GameEnd() {
+  setupWifi();
 }
 
 void loop() {
@@ -181,7 +189,7 @@ void receivedCallback(uint32_t from, String &msg) {
 }
 
 void newConnectionCallback(bool adopt) {
-  
+  Serial.println("New node found");
 }
 
 void webRoot() {
