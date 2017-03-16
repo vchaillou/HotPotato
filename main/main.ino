@@ -52,6 +52,9 @@ const char * linkJquery = "<link rel='stylesheet' href='//code.jquery.com/ui/1.1
                            <script src='https://code.jquery.com/ui/1.12.1/jquery-ui.js'></script>";
 const char * contentJquery = "<script>\
                                 $( function() {\
+                                  $('#id_button_table').click(function(){\
+                                    $('#id_div_table').toggle();\
+                                  });\
                                 } );\
                           </script>";
 const char * contentCss = "<style>\
@@ -166,8 +169,12 @@ void loop() {
     for(int i=0 ; i<playerCount ; i++) {
       if(playerList[i].node == mesh.getChipId()) {
         String str = String("YOURETHEPOTATOOWNER");
-        digitalWrite(redButtonPin, LOW);
+        while(mesh.connectionCount() <playerCount - 1){
+          mesh.update();
+          delay(100);
+        }
         mesh.sendSingle(playerList[(i+1)%playerCount].node, str);
+        digitalWrite(redButtonPin, LOW);
         hasPotato = false;
         break;
       }
@@ -199,8 +206,8 @@ void webRoot() {
 
 
 String getStatHtml(){
-  String statHead = "<br/>\
-                 <table>\
+  String statHead = "<br/><button id='id_button_table'>Show/Hide</button>\
+                 <div id='id_div_table'><table>\
                   <tr>\
                     <td>Ranking</td>\
                     <td>Name</td>\
@@ -222,7 +229,7 @@ String getStatHtml(){
                       <td>"+str_all+"</td>\
                     </tr>"; 
   }
-  String stat = statHead + statBody + String("</table>");
+  String stat = statHead + statBody + String("</table>" + String("</div>"));
   return stat;
 }
 
@@ -247,9 +254,12 @@ String getHTML() {
 }
 
 void beginGameWithPotato() {
-  server.send(200, "text/plain", "Game is running...");
+  server.send(200, "text/plain", "Game will be launched shortly...");
   WiFi.disconnect();
-  delay(10000);
+  while(mesh.connectionCount() <playerCount - 1){
+    mesh.update();
+    delay(1000);
+  }
   mesh.update();
   gameStarted = true;
   hasPotato = true;
@@ -261,9 +271,8 @@ void beginGameWithPotato() {
 }
 
 void beginGameWithoutPotato() {
-  server.send(200, "text/plain", "Game is running...");
+  server.send(200, "text/plain", "Waiting for the potato...");
   WiFi.disconnect();
-  setupMesh();
 }
 
 
