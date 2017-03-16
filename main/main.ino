@@ -129,15 +129,17 @@ void loop() {
 }
 
 void receivedCallback(uint32_t from, String &msg) {
+  Serial.print("Message received:");
+  Serial.println(msg);
   String message = msg;
   if(msg.startsWith("NewPlayer ")) {
-    message = msg.substring(16);
+    message = msg.substring(15);
     Serial.println(message);
     uint32_t playerNode = message.substring(0, message.indexOf(" ")).toInt();
     Serial.println(playerNode);
     message = message.substring(message.indexOf(" ")+1);
     Serial.println(message);
-    String playerName = message.substring(8);
+    String playerName = message.substring(7);
     Serial.println(playerName);
     playerList[playerCount].name = playerName;
     playerList[playerCount].node = playerNode;
@@ -146,31 +148,31 @@ void receivedCallback(uint32_t from, String &msg) {
     playerList[playerCount].nbLost = 0;
     playerCount++;
     Serial.print("New Player : ");
-    Serial.print(playerName);
+    Serial.println(playerName);
     mesh.sendSingle(playerNode, String("SetPlayer node:") + String(player.node) + String(" Name:") + String(player.name) + String(" Num:") + String(player.num) + 
       String(" NbWon:") + String(player.nbWon) + String(" NbLost:") + String(player.nbLost) + String(" PlayerCount:") + String(playerCount));
   }
   else if(msg.startsWith("SetPlayer ")) {
-    message = msg.substring(16);
+    message = msg.substring(15);
     Serial.println(message);
     uint8_t playerNode = message.substring(0, message.indexOf(" ")).toInt();
     Serial.println(playerNode);
     message = message.substring(message.indexOf(" ")+1);
     Serial.println(message);
-    String playerName = message.substring(8);
+    String playerName = message.substring(7);
     Serial.println(playerName);
     message = message.substring(message.indexOf(" ")+1);
     //int playerNum, playerNbWon, playerNbLost;
     //char charMessage[message.length()];
     //message.toCharArray(charMessage, message.length());
     //sscanf(charMessage, "Num:%i NbWon:%i NbLost:%i PlayerCount:%i", &playerNum, &playerNbWon, &playerNbLost, &playerCount);
-    int playerNum = message.substring(4, message.indexOf(" ")).toInt();
+    int playerNum = message.substring(3, message.indexOf(" ")).toInt();
     message = message.substring(message.indexOf(" ")+1);
-    int playerNbWon = message.substring(6, message.indexOf(" ")).toInt();
+    int playerNbWon = message.substring(5, message.indexOf(" ")).toInt();
     message = message.substring(message.indexOf(" ")+1);
-    int playerNbLost = message.substring(7, message.indexOf(" ")).toInt();
+    int playerNbLost = message.substring(6, message.indexOf(" ")).toInt();
     message = message.substring(message.indexOf(" ")+1);
-    playerCount = message.substring(12).toInt();
+    playerCount = message.substring(11).toInt();
     playerList[playerNum].num = playerNum;
     playerList[playerNum].name = playerName;
     playerList[playerNum].nbWon = playerNbWon;
@@ -258,19 +260,20 @@ void addPlayer() {
   setupMesh();
   int i=0;
 
-  while(i<20 && !playerReady) {
+  while(i<30 && !playerReady) {
     mesh.sendBroadcast(String("NewPlayer Node:") + String(player.node) + String(" Player:") + String(player.name));
     delay(1000);
     mesh.update();
     i++;
   }
 
-  while(i<20) {
+  while(i<30) {
     delay(1000);
     mesh.update();
     i++;
   }
 
+  Serial.println("Game Start");
   // game start
   
 }
