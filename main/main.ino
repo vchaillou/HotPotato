@@ -143,19 +143,27 @@ void loop() {
       digitalWrite(buzzerPin, LOW);
       for(int i=0 ; i<playerCount; i++) {
         if(playerList[i].node == mesh.getChipId()) {
+          delay(1000); // just to be sure
+          String str = String(playerList[i].node);
+          while(mesh.connectionCount() < playerCount-1) {
+            mesh.update();
+            delay(100);
+          }
+          mesh.sendBroadcast(str);
           playerList[i].nbLost += 1;
         }
       }
-    }
-    else {
       for(int i=0 ; i<playerCount; i++) {
         if(playerList[i].node == mesh.getChipId()) {
+          playerList[i].nbLost += 1;
+        }
+        else {
           playerList[i].nbWon += 1;
         }
+        gameStarted = false;
       }
     }
     
-    gameStarted = false;
     hasPotato = false;
     digitalWrite(redButtonPin, LOW);
     setupWifi();
@@ -165,11 +173,11 @@ void loop() {
     timer--;
   }
   
-  if(gameStarted && hasPotato && digitalRead(buttonPin) == LOW) {
+  if(gameStarted && timer>0 && hasPotato && digitalRead(buttonPin) == LOW) {
     for(int i=0 ; i<playerCount ; i++) {
       if(playerList[i].node == mesh.getChipId()) {
         String str = String("YOURETHEPOTATOOWNER");
-        while(mesh.connectionCount() <playerCount - 1){
+        while(mesh.connectionCount() < playerCount-1) {
           mesh.update();
           delay(100);
         }
@@ -190,9 +198,20 @@ void receivedCallback(uint32_t from, String &msg) {
     gameStarted = true;
     hasPotato = false;
   }
-  else {
+  else if(timer > 0){
     hasPotato = true;
     digitalWrite(redButtonPin, HIGH);
+  }
+  else {
+    gameStarted = false;
+    for(int i=0 ; i<playerCount; i++) {
+      if(playerList[i].node == msg.toInt()) {
+        playerList[i].nbLost += 1;
+      }
+      else {
+        playerList[i].nbWon += 1;
+      }
+    }
   }
 }
 
@@ -256,11 +275,10 @@ String getHTML() {
 void beginGameWithPotato() {
   server.send(200, "text/plain", "Game will be launched shortly...");
   WiFi.disconnect();
-  while(mesh.connectionCount() <playerCount - 1){
+  while(mesh.connectionCount() < playerCount-1) {
     mesh.update();
     delay(1000);
   }
-  mesh.update();
   gameStarted = true;
   hasPotato = true;
   digitalWrite(redButtonPin, HIGH);
