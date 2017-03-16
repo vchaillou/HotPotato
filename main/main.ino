@@ -14,7 +14,7 @@
 #define MAX_PLAYERS 10
 
 
-const int buttonPin = D0; // Button to thow the potato to another player
+const int buttonPin = D2; // Button to thow the potato to another player
 const int yellowButtonPin = D5; // Potato owner
 const int redButtonPin = D7;    // Death Indicator
 const int buzzerPin = D8;  // Buzzer "explosion"
@@ -75,7 +75,7 @@ void setupMesh() {
 }
 
 void setupPin() {
-    pinMode(buttonPin, INPUT);
+    pinMode(buttonPin, INPUT_PULLUP);
     pinMode(yellowButtonPin, OUTPUT);
     pinMode(redButtonPin, OUTPUT);
     pinMode(buzzerPin, OUTPUT);
@@ -150,7 +150,7 @@ void loop() {
             delay(100);
           }
           mesh.sendBroadcast(str);
-          playerList[i].nbLost += 1;
+          break;
         }
       }
       for(int i=0 ; i<playerCount; i++) {
@@ -162,18 +162,19 @@ void loop() {
         }
         gameStarted = false;
       }
+      setupWifi();
     }
     
     hasPotato = false;
     digitalWrite(redButtonPin, LOW);
-    setupWifi();
     timer = -1;
   }
   else if(timer > 0) {
     timer--;
   }
-  
+
   if(gameStarted && timer>0 && hasPotato && digitalRead(buttonPin) == LOW) {
+    Serial.println("Bouton !");
     for(int i=0 ; i<playerCount ; i++) {
       if(playerList[i].node == mesh.getChipId()) {
         String str = String("YOURETHEPOTATOOWNER");
@@ -204,6 +205,7 @@ void receivedCallback(uint32_t from, String &msg) {
   }
   else {
     gameStarted = false;
+    Serial.println("Score !");
     for(int i=0 ; i<playerCount; i++) {
       if(playerList[i].node == msg.toInt()) {
         playerList[i].nbLost += 1;
@@ -212,6 +214,7 @@ void receivedCallback(uint32_t from, String &msg) {
         playerList[i].nbWon += 1;
       }
     }
+    setupWifi();
   }
 }
 
@@ -275,6 +278,7 @@ String getHTML() {
 void beginGameWithPotato() {
   server.send(200, "text/plain", "Game will be launched shortly...");
   WiFi.disconnect();
+  WiFi.mode(WIFI_OFF);
   while(mesh.connectionCount() < playerCount-1) {
     mesh.update();
     delay(1000);
@@ -291,6 +295,7 @@ void beginGameWithPotato() {
 void beginGameWithoutPotato() {
   server.send(200, "text/plain", "Waiting for the potato...");
   WiFi.disconnect();
+  WiFi.mode(WIFI_OFF);
 }
 
 
