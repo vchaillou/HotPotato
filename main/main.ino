@@ -1,6 +1,7 @@
 #include <easyMesh.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <stdio.h>
 
 #define MESH_PREFIX     "HOTPOTATO"
 #define MESH_PASSWORD   "Zodiaque"
@@ -130,7 +131,7 @@ void receivedCallback(uint32_t from, String &msg) {
   if(msg.startsWith("NewPlayer ")) {
     message = msg.substring(16);
     Serial.println(message);
-    uint8_t playerNode = message.substring(0, message.indexOf(" ")).toInt();
+    uint32_t playerNode = message.substring(0, message.indexOf(" ")).toInt();
     Serial.println(playerNode);
     message = message.substring(message.indexOf(" ")+1);
     Serial.println(message);
@@ -142,6 +143,40 @@ void receivedCallback(uint32_t from, String &msg) {
     playerList[playerCount].nbWon = 0;
     playerList[playerCount].nbLost = 0;
     playerCount++;
+    Serial.print("New Player : ");
+    Serial.print(playerName);
+    mesh.sendSingle(playerNode, String("SetPlayer node:") + String(player.node) + String(" Name:") + String(player.name) + String(" Num:") + String(player.num) + 
+      String(" NbWon:") + String(player.nbWon) + String(" NbLost:") + String(player.nbLost) + String(" PlayerCount:") + String(playerCount));
+  }
+  else if(msg.startsWith("SetPlayer ")) {
+    message = msg.substring(16);
+    Serial.println(message);
+    uint8_t playerNode = message.substring(0, message.indexOf(" ")).toInt();
+    Serial.println(playerNode);
+    message = message.substring(message.indexOf(" ")+1);
+    Serial.println(message);
+    String playerName = message.substring(8);
+    Serial.println(playerName);
+    message = message.substring(message.indexOf(" ")+1);
+    //int playerNum, playerNbWon, playerNbLost;
+    //char charMessage[message.length()];
+    //message.toCharArray(charMessage, message.length());
+    //sscanf(charMessage, "Num:%i NbWon:%i NbLost:%i PlayerCount:%i", &playerNum, &playerNbWon, &playerNbLost, &playerCount);
+    int playerNum = message.substring(4, message.indexOf(" ")).toInt();
+    message = message.substring(message.indexOf(" ")+1);
+    int playerNbWon = message.substring(6, message.indexOf(" ")).toInt();
+    message = message.substring(message.indexOf(" ")+1);
+    int playerNbLost = message.substring(7, message.indexOf(" ")).toInt();
+    message = message.substring(message.indexOf(" ")+1);
+    playerCount = message.substring(12).toInt();
+    playerList[playerNum].num = playerNum;
+    playerList[playerNum].name = playerName;
+    playerList[playerNum].nbWon = playerNbWon;
+    playerList[playerNum].nbLost = playerNbLost;
+    playerList[playerNum].node = playerNode;
+
+    player.num = playerCount-1;
+    playerList[playerCount-1] = player;
   }
 }
 
