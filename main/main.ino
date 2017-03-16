@@ -13,10 +13,6 @@
 
 #define MAX_PLAYERS 10
 
-#define SEND_POTATO_TO_PLAYER_X "To:X Potato"
-
-
-
 
 const int buttonPin = D0; // Button to thow the potato to another player
 const int yellowButtonPin = D5; // Potato owner
@@ -33,12 +29,13 @@ typedef struct {
   int nbLost;
 } Player;
 
-Player potatoOwner;
-Player player;
 Player playerList[MAX_PLAYERS];
 int playerCount = 0;
 
-bool playerReady = false;
+bool hasPotato = false;
+
+bool gameStarted = false;
+int timer = -1;
 
 ESP8266WebServer server(WEBSERVER_PORT);
 const char * ssid = "Server_Potato";
@@ -73,7 +70,7 @@ void setupMesh() {
   mesh.setReceiveCallback( &receivedCallback );
   mesh.setNewConnectionCallback( &newConnectionCallback );
 
-  player.node = mesh.getChipId();
+  player.node = mesh.getChipId(); 
 }
 
 void setupPin() {
@@ -98,7 +95,8 @@ void setupServer() {
     Serial.println("MDNS responder started");
   }
   server.on("/", webRoot);
-  server.on("/set_name", setName);
+  server.on("/BeginWithPotato", beginWithPotato);
+  server.on("/BeginWithoutPotato", beginWithoutPotato);
   server.begin();
   Serial.println("HTTP server started");
 }
@@ -116,72 +114,75 @@ void setup() {
   setupWifi();
   setupServer();
   setupMDNS();
+
+  // TO CHANGE
+  addPlayer(1022050, "Valentin C.");
+  addPlayer(13666106, "Christian");
+  // TODO => VM
+}
+
+void addPlayer(uint32_t node, string name) {
+  playerList[playerCount].node = node;
+  playerList[playerCount].name = name;
+  playerList[playerCount].nbWon = 0;
+  playerList[playerCount].nbLost = 0;
+  playerList[playerCount].num = playerCount;
+  playerCount++;
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   server.handleClient();
   mesh.update();
-  if(potatoOwner.node == player.node) {
-    //Player &chosenPlayer;
-    //mesh.sendBroadcast(SEND_POTATO_TO_PLAYER_X.replace("X", ))
+
+  if(timer == 0) {
+    if(hasPotato) {
+      // TODO => Turn the buzzer on and off
+      for(int i=0 ; i<playerCount : i++) {
+        if(playerList[i].node == node) {
+          playerList[i].nbLost++;
+          break;
+        }
+      }
+    }
+    else {
+      for(int i=0 ; i<playerCount : i++) {
+        if(playerList[i].node == node) {
+          playerList[i].nbLost++;
+        }
+      }
+    }
+    
+    gameStarted = false;
+    hasPotato = false;
+    // TODO => unlit LED
+    setupWifi();
+    timer = -1;
   }
+  else if(timer > 0) {
+    timer--;
+  }
+  
+  if(gameStarted && hasPotato && digitalRead(buttonPin) == HIGH) {
+    for(int i=0 ; i<playerCount ; i++) {
+      if(playerList[i].node == mesh.getChipId()) {
+        // TODO => unlit LED
+        mesh.sendSingle(playerList[(i+1)%playerCount].node, "YOURETHEPOTATOOWNER");
+        hasPotato = false;
+        break;
+      }
+    }
+  }
+  delay(1000);
 }
 
 void receivedCallback(uint32_t from, String &msg) {
-  Serial.print("Message received:");
-  Serial.println(msg);
-  String message = msg;
-  if(msg.startsWith("NewPlayer ")) {
-    message = msg.substring(15);
-    Serial.println(message);
-    uint32_t playerNode = message.substring(0, message.indexOf(" ")).toInt();
-    Serial.println(playerNode);
-    message = message.substring(message.indexOf(" ")+1);
-    Serial.println(message);
-    String playerName = message.substring(7);
-    Serial.println(playerName);
-    playerList[playerCount].name = playerName;
-    playerList[playerCount].node = playerNode;
-    playerList[playerCount].num = playerCount;
-    playerList[playerCount].nbWon = 0;
-    playerList[playerCount].nbLost = 0;
-    playerCount++;
-    Serial.print("New Player : ");
-    Serial.println(playerName);
-    mesh.sendSingle(playerNode, String("SetPlayer node:") + String(player.node) + String(" Name:") + String(player.name) + String(" Num:") + String(player.num) + 
-      String(" NbWon:") + String(player.nbWon) + String(" NbLost:") + String(player.nbLost) + String(" PlayerCount:") + String(playerCount));
+  if(!gameStarted) {
+    timer = msg.toInt();
   }
-  else if(msg.startsWith("SetPlayer ")) {
-    message = msg.substring(15);
-    Serial.println(message);
-    uint8_t playerNode = message.substring(0, message.indexOf(" ")).toInt();
-    Serial.println(playerNode);
-    message = message.substring(message.indexOf(" ")+1);
-    Serial.println(message);
-    String playerName = message.substring(7);
-    Serial.println(playerName);
-    message = message.substring(message.indexOf(" ")+1);
-    //int playerNum, playerNbWon, playerNbLost;
-    //char charMessage[message.length()];
-    //message.toCharArray(charMessage, message.length());
-    //sscanf(charMessage, "Num:%i NbWon:%i NbLost:%i PlayerCount:%i", &playerNum, &playerNbWon, &playerNbLost, &playerCount);
-    int playerNum = message.substring(3, message.indexOf(" ")).toInt();
-    message = message.substring(message.indexOf(" ")+1);
-    int playerNbWon = message.substring(5, message.indexOf(" ")).toInt();
-    message = message.substring(message.indexOf(" ")+1);
-    int playerNbLost = message.substring(6, message.indexOf(" ")).toInt();
-    message = message.substring(message.indexOf(" ")+1);
-    playerCount = message.substring(11).toInt();
-    playerList[playerNum].num = playerNum;
-    playerList[playerNum].name = playerName;
-    playerList[playerNum].nbWon = playerNbWon;
-    playerList[playerNum].nbLost = playerNbLost;
-    playerList[playerNum].node = playerNode;
-
-    player.num = playerCount-1;
-    playerList[playerCount-1] = player;
-    playerReady = true;
+  else {
+    hasPotato = true;
+    // TODO => lit LED
   }
 }
 
@@ -243,38 +244,17 @@ String getHTML() {
   return tmpContentHtml;
 }
 
-
-void setName() {
-  player.name = server.arg(0);
-  Serial.println(player.name);
-  if(player.nbWon != 0 || player.nbLost != 0){
-    server.send(200, "text/html", getHTML() + getStatHtml());
-  }
-  else{
-    server.send(200, "text/html", getHTML());  
-  }
-  addPlayer();
+void beginGameWithPotato() {
+  setupMesh();
+  mesh.update();
+  delay(10000);
+  gameStarted = true;
+  hasPotato = true;
+  timer = random(10, 120);
+  mesh.sendBroadcast(String(timer));
 }
 
-void addPlayer() {
+void beginGameWithoutPotato() {
   setupMesh();
-  int i=0;
-
-  while(i<30 && !playerReady) {
-    mesh.sendBroadcast(String("NewPlayer Node:") + String(player.node) + String(" Player:") + String(player.name));
-    delay(1000);
-    mesh.update();
-    i++;
-  }
-
-  while(i<30) {
-    delay(1000);
-    mesh.update();
-    i++;
-  }
-
-  Serial.println("Game Start");
-  // game start
-  
 }
 
