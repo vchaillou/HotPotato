@@ -75,7 +75,7 @@ void setupPin() {
     pinMode(buttonPin, INPUT);
     pinMode(yellowButtonPin, OUTPUT);
     pinMode(redButtonPin, OUTPUT);
-    pinMode(melodyBuzzerPin, OUTPUT);
+    pinMode(buzzerPin, OUTPUT);
 }
 
 void setupWifi() {
@@ -93,8 +93,8 @@ void setupServer() {
     Serial.println("MDNS responder started");
   }
   server.on("/", webRoot);
-  server.on("/BeginWithPotato", beginGameWithPotato);
-  server.on("/BeginWithoutPotato", beginGameWithoutPotato);
+  server.on("/BeginGameWithPotato", beginGameWithPotato);
+  server.on("/BeginGameWithoutPotato", beginGameWithoutPotato);
   server.begin();
   Serial.println("HTTP server started");
 }
@@ -108,7 +108,7 @@ void setup() {
   Serial.begin(115200);
 
   setupPin();
-  //setupMesh();
+  setupMesh();
   setupWifi();
   setupServer();
   setupMDNS();
@@ -136,26 +136,26 @@ void loop() {
   if(timer == 0) {
     if(hasPotato) {
       digitalWrite(buzzerPin, HIGH);
+      Serial.println("Youpi youpa");
       delay(250);
       digitalWrite(buzzerPin, LOW);
       for(int i=0 ; i<playerCount; i++) {
         if(playerList[i].node == mesh.getChipId()) {
-          playerList[i].nbLost++;
-          break;
+          playerList[i].nbLost += 1;
         }
       }
     }
     else {
       for(int i=0 ; i<playerCount; i++) {
         if(playerList[i].node == mesh.getChipId()) {
-          playerList[i].nbLost++;
+          playerList[i].nbWon += 1;
         }
       }
     }
     
     gameStarted = false;
     hasPotato = false;
-    digitalWrite(ledPin, LOW);
+    digitalWrite(redButtonPin, LOW);
     setupWifi();
     timer = -1;
   }
@@ -163,11 +163,11 @@ void loop() {
     timer--;
   }
   
-  if(gameStarted && hasPotato && digitalRead(buttonPin) == HIGH) {
+  if(gameStarted && hasPotato && digitalRead(buttonPin) == LOW) {
     for(int i=0 ; i<playerCount ; i++) {
       if(playerList[i].node == mesh.getChipId()) {
         String str = String("YOURETHEPOTATOOWNER");
-        digitalWrite(ledPin, LOW);
+        digitalWrite(redButtonPin, LOW);
         mesh.sendSingle(playerList[(i+1)%playerCount].node, str);
         hasPotato = false;
         break;
@@ -183,7 +183,7 @@ void receivedCallback(uint32_t from, String &msg) {
   }
   else {
     hasPotato = true;
-    digitalWrite(ledPin, HIGH);
+    digitalWrite(redButtonPin, HIGH);
   }
 }
 
@@ -229,8 +229,8 @@ String getHTML() {
   String tmpContentJquery = contentJquery;
   String tmpLinkJquery = linkJquery;
   String tmpContentCss = contentCss;
-  String tmpFormHtml = "<Form style='margin-left:40%' action='/BeginGameWithPotato'><button type='submit' name='game' value='start'>Start with potato</button></Form>\
-                        <Form style='margin-left:40%' action='/BeginGameWithoutPotato'><button type='submit' name='game' value='start'>Start without potato</button></Form>";
+  String tmpFormHtml = "<Form style='margin-left:40%' action='/BeginGameWithPotato'><button type='submit'>Start with potato</button></Form>\
+                        <Form style='margin-left:40%' action='/BeginGameWithoutPotato'><button type='submit'>Start without potato</button></Form>";
   String replaceOcc0 = "</title>";
   tmpContentHtml.replace(replaceOcc0, replaceOcc0 + tmpContentJquery); 
   String replaceOcc1 = "<head>";
@@ -245,11 +245,13 @@ String getHTML() {
 }
 
 void beginGameWithPotato() {
-  setupMesh();
-  mesh.update();
+  server.send(200, "text/plain", "Game is running...");
+  WiFi.disconnect();
   delay(10000);
+  mesh.update();
   gameStarted = true;
   hasPotato = true;
+  digitalWrite(redButtonPin, HIGH);
   timer = random(10, 120);
   String str = String(timer);
   mesh.sendBroadcast(str);
@@ -257,6 +259,8 @@ void beginGameWithPotato() {
 }
 
 void beginGameWithoutPotato() {
+  server.send(200, "text/plain", "Game is running...");
+  WiFi.disconnect();
   setupMesh();
 }
 
