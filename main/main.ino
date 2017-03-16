@@ -180,6 +180,8 @@ void receivedCallback(uint32_t from, String &msg) {
   if(!gameStarted) {
     timer = msg.toInt();
     Serial.println(timer);
+    gameStarted = true;
+    hasPotato = false;
   }
   else {
     hasPotato = true;
