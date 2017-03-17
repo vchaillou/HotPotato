@@ -77,11 +77,11 @@ const char * contentCss = "<style>\
                                 border-style: solid;\ 
                                 border-width: 1px;\ 
                               }\
-                              Form, h1{\
+                              Form, h1, button{\
                                 margin-left:40%\
                               }\
                               body{\
-                                background-color: #F2E318;\
+                                background-color: #CA6F1E;\
                               }\
                           </style>";
 
@@ -252,7 +252,7 @@ String getHTML() {
   String tmpContentJquery = contentJquery;
   String tmpLinkJquery = linkJquery;
   String tmpContentCss = contentCss;
-  String tmpFormHtml = "<h1>Game Potato</h1><Form action='/BeginGameWithPotato'><button type='submit'>Start with potato</button></Form>\
+  String tmpFormHtml = "<h1>Game HotPotato</h1><Form action='/BeginGameWithPotato'><button type='submit'>Start with potato</button></Form>\
                         <Form style='margin-left:40%' action='/BeginGameWithoutPotato'><button type='submit'>Start without potato</button></Form>";
   String replaceOcc0 = "</title>";
   tmpContentHtml.replace(replaceOcc0, replaceOcc0 + tmpContentJquery); 
