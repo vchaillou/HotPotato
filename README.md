@@ -6,7 +6,7 @@ Game rules
  
 First, the players choose who will have the potato on their arduino webpage.
 There must be one player with a potato. The others will not have one.
-As soon as the potato is created a timer is set between 10 and 120 secondes.
+As soon as the potato is created a timer, invisible to the players, is set between 10 and 120 secondes.
 A red light tells to the player that he have the potato.
 Then, the player with a potato can push the button to send it to another player.
 When the potato explodes (when the timer reach 0) the buzzer makes a sound.
