@@ -135,7 +135,6 @@ void setup() {
   addPlayer(1022050, "Valentin C.", "chaillou.val@gmail.com");
   addPlayer(13666106, "Christian", "joe_boud@yahoo.fr");
   addPlayer(2652946, "Valentin M.", "vamn@protonmail.com");
-  // TODO => VM
 }
 
 /*********************/
