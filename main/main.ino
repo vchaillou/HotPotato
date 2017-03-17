@@ -8,6 +8,10 @@
 /***** CONSTANTS AND GLOBALS *****/
 /*********************************/
 
+// Uncomment to enable mails
+// Not working for now (Exception 29)
+//#define _HOTPOTATO_SENDMAIL
+
 #define MESH_PREFIX     "HOTPOTATO"
 #define MESH_PASSWORD   "Zodiaque"
 #define MESH_PORT       21147
@@ -179,6 +183,8 @@ void receivedCallback(uint32_t from, String &msg) {
   else if(timer > 0){
     hasPotato = true;
     digitalWrite(redLightPin, HIGH);
+    Serial.print("Game still running for ");
+    Serial.println(timer);
   }
   else {
     gameStarted = false;
@@ -297,7 +303,10 @@ void beginGameWithoutPotato() {
 // Subject is fixed
 void sendMail(String to, String content) {
     Gsender *gsender = Gsender::Instance();    // Getting pointer to class instance
-    if(gsender->Subject("HotPotato Game result")->Send(to, content)) {
+    Serial.print("Sending a mail to ");
+    Serial.println(to);
+    String subject = "HotPotato Game result";
+    if(gsender->Subject(subject)->Send(to, content)) {
         Serial.println("Message sent.");
     } else {
         Serial.print("Error sending message: ");
@@ -350,12 +359,13 @@ void loop() {
       setupWifi();
       
 
+#if defined(_HOTPOTATO_SENDMAIL)
       // The loser send the Mail to notify the player that he won/lost
       String subject = "HotPotato Game result";
-      String content = "";
       for(int i=0 ; i<playerCount-1 ; i++) {
         sendMail(playerList[i].mail, playerList[i].node == mesh.getChipId() ? "You are a looooooooooser !" : "Hey, you won !");
       }
+#endif
     }
     
     hasPotato = false;

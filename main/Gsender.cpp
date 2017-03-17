@@ -1,4 +1,7 @@
 #include "Gsender.h"
+
+#define GS_SERIAL_LOG_2
+
 Gsender* Gsender::_instance = 0;
 Gsender::Gsender(){}
 Gsender* Gsender::Instance()
