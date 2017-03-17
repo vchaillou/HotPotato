@@ -2,6 +2,7 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <stdio.h>
+#include "Gsender.h"
 
 /*********************************/
 /***** CONSTANTS AND GLOBALS *****/
@@ -30,6 +31,7 @@ typedef struct {
   int num;
   int nbWon;
   int nbLost;
+  String mail;
 } Player;
 
 Player playerList[MAX_PLAYERS];
@@ -130,8 +132,9 @@ void setup() {
   setupServer();
 
   // TO CHANGE
-  addPlayer(1022050, "Valentin C.");
-  addPlayer(13666106, "Christian");
+  addPlayer(1022050, "Valentin C.", "chaillou.val@gmail.com");
+  addPlayer(13666106, "Christian", "joe_boud@yahoo.fr");
+  addPlayer(2652946, "Valentin M.", "vamn@protonmail.com");
   // TODO => VM
 }
 
@@ -142,12 +145,13 @@ void setup() {
 // Adds a player the player list
 // Just needs the node and the name
 // Counter is automatically incremented
-void addPlayer(uint32_t node, String name) {
+void addPlayer(uint32_t node, String name, String mail) {
   playerList[playerCount].node = node;
   playerList[playerCount].name = name;
   playerList[playerCount].nbWon = 0;
   playerList[playerCount].nbLost = 0;
   playerList[playerCount].num = playerCount;
+  playerList[playerCount].mail = mail;
   playerCount++;
 }
 
@@ -280,6 +284,22 @@ void beginGameWithoutPotato() {
   WiFi.disconnect();
 }
 
+/****************/
+/***** MAIL *****/
+/****************/
+
+// Send a mail to the player with a specified content
+// Subject is fixed
+void sendMail(String to, String content) {
+    Gsender *gsender = Gsender::Instance();    // Getting pointer to class instance
+    if(gsender->Subject("HotPotato Game result")->Send(to, content)) {
+        Serial.println("Message sent.");
+    } else {
+        Serial.print("Error sending message: ");
+        Serial.println(gsender->getError());
+    }
+}
+
 /*********************/
 /***** MAIN LOOP *****/
 /*********************/
@@ -323,6 +343,14 @@ void loop() {
         gameStarted = false;
       }
       setupWifi();
+      
+
+      // The loser send the Mail to notify the player that he won/lost
+      String subject = "HotPotato Game result";
+      String content = "";
+      for(int i=0 ; i<playerCount-1 ; i++) {
+        sendMail(playerList[i].mail, playerList[i].node == mesh.getChipId() ? "You are a looooooooooser !" : "Hey, you won !");
+      }
     }
     
     hasPotato = false;
