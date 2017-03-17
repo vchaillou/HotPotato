@@ -40,30 +40,30 @@ First, you have to change the players and their node in the setup() function. Th
 In French :
 Partage des tâches
 -------------
-Jour 1:
-Découverte d'Arduino : tout le monde
-Premiers TPs : tout le monde
-Choix du sujet et premiers choix techniques : tout le monde
+ * Jour 1:
+ * Découverte d'Arduino : tout le monde
+ * Premiers TPs : tout le monde
+ * Choix du sujet et premiers choix techniques : tout le monde
 
-Jour 2:
-Recherche sur les réseaux maillés : tout le monde
-Premiers tests avec la bibliothèque ESP8266WiFiMeh : tout le monde
-Définition initiale du montage : Valentin MEYNE
-Seconds tests avec la bibliothèque EasyMesh : Valentin CHAILLOU et Christian EBONGUE
-Tests de fonctionnement simultané de réseau standard et de réseau maillé : Valentin CHAILLOU et Christian EBONGUE
-Définition des premiers algorithmes et des tonalités du buzzer : Valentin MEYNE
+ * Jour 2:
+ * Recherche sur les réseaux maillés : tout le monde
+ * Premiers tests avec la bibliothèque ESP8266WiFiMeh : tout le monde
+ * Définition initiale du montage : Valentin MEYNE
+ * Seconds tests avec la bibliothèque EasyMesh : Valentin CHAILLOU et Christian EBONGUE
+ * Tests de fonctionnement simultané de réseau standard et de réseau maillé : Valentin CHAILLOU et Christian EBONGUE
+ * Définition des premiers algorithmes et des tonalités du buzzer : Valentin MEYNE
 
-Jour 3:
-Définition du protocole réseau : Valentin CHAILLOU
-Début de page Web avec statistiques de jeu : Christian EBONGUE
-Finition de l'algorithme de jeu : Valentin CHAILLOU et Christian EBONGUE (pair programming)
-Ajustements du montage électrique : Valentin CHAILLOU
-Tests de parties complètes : Valentin CHAILLOU et Christian EBONGUE
+ * Jour 3:
+ * Définition du protocole réseau : Valentin CHAILLOU
+ * Début de page Web avec statistiques de jeu : Christian EBONGUE
+ * Finition de l'algorithme de jeu : Valentin CHAILLOU et Christian EBONGUE (pair programming)
+ * Ajustements du montage électrique : Valentin CHAILLOU
+ * Tests de parties complètes : Valentin CHAILLOU et Christian EBONGUE
 
-Jour 4:
-Nettoyage du code : Valentin CHAILLOU
-Test d'envoi de mails : Valentin CHAILLOU
-Finition de la page Web : Christian EBONGUE
-Recherche de solutions Cloud : Valentin MEYNE
-Rédaction de la documentation technique : tout le monde
+ * Jour 4:
+ * Nettoyage du code : Valentin CHAILLOU
+ * Test d'envoi de mails : Valentin CHAILLOU
+ * Finition de la page Web : Christian EBONGUE
+ * Recherche de solutions Cloud : Valentin MEYNE
+ * Rédaction de la documentation technique : tout le monde
 
