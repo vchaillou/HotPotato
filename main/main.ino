@@ -132,6 +132,7 @@ void setup() {
   // TO CHANGE
   addPlayer(1022050, "Valentin C.");
   addPlayer(13666106, "Christian");
+  addPlayer(2652946, "Valentin M.");
   // TODO => VM
 }
 
