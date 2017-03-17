@@ -221,7 +221,7 @@ String getStatHtml(){
   String statHead = "<br/><button id='id_button_table'>Show/Hide</button>\
                  <div id='id_div_table'><table>\
                   <tr>\
-                    <td>Ranking</td>\
+                    <td>Number</td>\
                     <td>Name</td>\
                     <td>Number lost</td>\
                     <td>Number win</td>\
