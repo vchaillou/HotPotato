@@ -1,17 +1,30 @@
 # HotPotato
 IoT project that let you play the "hot potato" game !
 
+Game rules
+-------------
+ 
+First, the players choose who will have the potato on their arduino webpage.
+There must be one player with a potato. The others will not have one.
+As soon as the potato is created a timer is set between 10 and 120 secondes.
+A red light tells to the player that he have the potato.
+Then, the player with a potato can push the button to send it to another player.
+When the potato explodes (when the timer reach 0) the buzzer makes a sound.
+The player who had it at this moment loose the game.
+Finally, The scores are updates on the webpage.
+ 
+ 
 Hardware Requirements
 -------------
  * 1 x Wemos D1 mini
  * 1 x push button
  * 1 x red LED
  * 1 x buzzer
- * an USB power (either computer or battery)
+ * an micro USB power (either computer or battery)
 
 Software Requirements
 -------------
- * EsyMesh Library : https://github.com/Coopdis/easyMesh
+ * EasyMesh Library : https://github.com/Coopdis/easyMesh
  * SimpleList Library : https://github.com/blackhack/ArduLibraries/tree/4b25c1d01a1e4fa05f5a0dfb8678dd29905762e9
  * ArduinoJson : https://github.com/bblanchon/ArduinoJson
 
